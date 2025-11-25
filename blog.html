@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="blog-page-title">ब्लॉग पोस्ट लोड हो रहा है...</title> 
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* Fluid Variables and Reset */
+        :root {
+            --primary-color: #3b82f6; 
+            --secondary-color: #10b981; 
+            --background-light: #f3f4f6;
+            --text-dark: #1f2937;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* FLUID TYPOGRAPHY: Stable font size */
+            font-size: clamp(16px, 1.2vw, 18px); 
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        ul {
+            list-style: none;
+        }
+        
+        /* 1. Header Styling (FIXED: Improved Mobile Layout) */
+        header {
+            background: var(--text-dark);
+            color: #fff;
+            height: var(--header-height);
+            padding: 0 1rem; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            position: relative; 
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 3vw, 1.5rem); 
+            font-weight: 700;
+            color: var(--secondary-color);
+            flex-shrink: 0; 
+        }
+        
+        /* 2. Search Container */
+        .search-container {
+            display: flex;
+            align-items: center;
+            order: 2;
+            transition: all 0.3s ease;
+            max-width: 100%;
+            flex-grow: 1; 
+            justify-content: flex-end; 
+        }
+        
+        /* Icon Button Styling */
+        #search-icon {
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            flex-shrink: 0; 
+            z-index: 1; 
+        }
+        
+        /* Search Input */
+        .search-input {
+            width: 0; 
+            opacity: 0;
+            padding: 0;
+            border: none;
+            height: 35px;
+            background-color: #4b5563;
+            color: #fff;
+            border-radius: 20px;
+            transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin-left 0.3s ease;
+            margin-left: -10px; 
+        }
+
+        /* 3. ACTIVE state for Mobile Search */
+        .search-container.active {
+            position: absolute; 
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            max-width: none; 
+            z-index: 1001; 
+            background: var(--text-dark);
+            padding: 0 1rem;
+            border-radius: 0;
+            justify-content: space-between;
+        }
+
+        .search-container.active .search-input {
+            width: calc(100% - 40px); 
+            opacity: 1;
+            padding: 8px 15px;
+            margin-left: 0; 
+            background-color: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--primary-color);
+            order: 1;
+        }
+
+        .search-container.active #search-icon {
+            color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            order: 2; 
+        }
+        
+        /* Hide siblings when search is active */
+        .search-container.active ~ .logo,
+        .search-container.active ~ .desktop-nav,
+        .search-container.active ~ #hamburger-button {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s 0.3s, opacity 0.3s ease;
+        }
+
+        /* Hamburger and Desktop Nav */
+        .desktop-nav { display: none; }
+        .hamburger { cursor: pointer; padding: 5px; order: 3; flex-shrink: 0; }
+        .bar { display: block; width: 25px; height: 3px; margin: 5px auto; background-color: #fff; transition: all 0.3s ease; }
+        
+        /* 4. Hamburger Animation */
+        .hamburger.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active .bar:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .hamburger.active .bar:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* 5. Main Container & Sidebar */
+        .main-container { flex-grow: 1; display: grid; grid-template-columns: 1fr; }
+        .sidebar {
+            position: fixed; left: 0; top: var(--header-height); height: calc(100vh - var(--header-height));
+            width: var(--sidebar-width); transform: translateX(-100%); transition: transform 0.3s ease;
+            z-index: 999; overflow-y: auto; padding: 1.5rem; background: var(--background-light); box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar.active { transform: translateX(0); }
+        .content-area { padding: clamp(1rem, 5vw, 2rem); max-width: 900px; margin: 0 auto; width: 100%; }
+        footer { background: var(--text-dark); color: var(--background-light); text-align: center; padding: 1.5rem; }
+        
+        /* Blog Content Specific Styles */
+        #full-blog-post p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+        #full-blog-post strong {
+            font-weight: 700;
+        }
+        
+        /* 6. Desktop Adjustments (Media Query: 900px se bada screen) */
+        @media (min-width: 900px) {
+            
+            header { 
+                padding: 0 2rem; 
+                position: sticky; 
+            }
+            
+            .desktop-nav { display: flex; order: 3; gap: 1.5rem; }
+            .desktop-nav a { color: #fff; }
+
+            /* Desktop FIX: Search bar hamesha dikhega aur stable rahega */
+            .search-container {
+                max-width: 400px;
+                order: 2;
+                justify-content: flex-start;
+                position: static; 
+                padding: 0;
+                z-index: auto;
+                flex-grow: 0; 
+            }
+
+            .search-container .search-input {
+                width: 250px; 
+                opacity: 1;
+                padding: 8px 15px;
+                margin-left: 0;
+                background-color: #4b5563;
+                color: #fff;
+                border: 1px solid #3c4a5c; 
+            }
+            .search-container #search-icon { display: none; }
+            .search-container.active .search-input { width: 250px; } 
+            .search-container.active { background: none; } 
+
+            /* Desktop: Ensure siblings are visible */
+            .search-container.active ~ .logo,
+            .search-container.active ~ .desktop-nav,
+            .search-container.active ~ #hamburger-button {
+                visibility: visible;
+                opacity: 1;
+                transition: none;
+            }
+
+            .hamburger { display: none; }
+
+            .main-container {
+                grid-template-columns: var(--sidebar-width) 1fr;
+            }
+            
+            .sidebar {
+                position: sticky;
+                top: var(--header-height);
+                height: calc(100vh - var(--header-height));
+                transform: translateX(0); 
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="logo">The Cārvāka</div>
+        
+        <div class="search-container" id="search-box">
+            <i class="fa-solid fa-magnifying-glass" id="search-icon"></i>
+            <input type="search" placeholder="Search content..." class="search-input">
+        </div>
+
+        <nav class="desktop-nav">
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="#">Products</a></li>
+                <li><a href="#">Support</a></li>
+            </ul>
+        </nav>
+
+        <div class="hamburger" id="hamburger-button">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar" id="sidebar-menu">
+            <h3>Navigation</h3>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Billing</a></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">Extra</h3>
+            <ul>
+                <li><a href="#">Reports</a></li>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="content-area">
+            <div id="full-blog-post">
+                <nav style="margin-bottom: 1rem;"><a href="index.html">← सभी पोस्ट पर वापस जाएं</a></nav>
+                <h1 style="color: var(--primary-color);">loading.</h1>
+                <p>please wait•••</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+           
+        </div>
+        <p>The Cārvāka &copy; 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.getElementById('hamburger-button');
+            const sidebar = document.getElementById('sidebar-menu');
+            const searchIcon = document.getElementById('search-icon'); 
+            const searchBox = document.getElementById('search-box'); 
+            const searchInput = document.querySelector('.search-input');
+            const container = document.getElementById('full-blog-post');
+            const pageTitle = document.getElementById('blog-page-title');
+            
+            // Function to check if we are in mobile view
+            const isMobile = () => window.innerWidth <= 900;
+
+            // --- Core Layout Logic ---
+
+            // Hamburger Toggle
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                hamburger.classList.toggle('active'); 
+            });
+
+            // Sidebar Links Close
+            const sidebarLinks = sidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (isMobile()) {
+                        sidebar.classList.remove('active');
+                        hamburger.classList.remove('active');
+                    }
+                });
+            });
+
+            // Search Icon Expansion Logic
+            searchIcon.addEventListener('click', function() {
+                if (isMobile()) {
+                    searchBox.classList.toggle('active');
+                    if (searchBox.classList.contains('active')) {
+                        searchInput.focus();
+                    } else {
+                        searchInput.blur();
+                    }
+                }
+            });
+            
+            // Search Input Focus for better UX on mobile
+            searchInput.addEventListener('focus', function() {
+                 if (isMobile()) {
+                    searchBox.classList.add('active');
+                }
+            });
+
+            // Window resize handler to handle desktop/mobile switch
+            window.addEventListener('resize', function() {
+                if (!isMobile()) {
+                    searchBox.classList.remove('active');
+                }
+            });
+
+            // --- Search Submission Logic for blog.html (NEW) ---
+            // blog.html पर सर्च करने पर यूज़र को index.html पर रीडायरेक्ट करें
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && searchInput.value.trim() !== '') {
+                    // Enter दबाने पर सर्च टर्म को query parameter के रूप में index.html पर भेजें
+                    const searchTerm = searchInput.value.trim();
+                    window.location.href = `index.html?search=${encodeURIComponent(searchTerm)}`;
+                }
+            });
+
+
+            // --- Blog Post Loading Logic ---
+            
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
+
+            function loadBlogPost() {
+                const blogId = parseInt(getQueryParam('id'));
+
+                if (!blogId) {
+                    container.innerHTML = `
+                        <nav style="margin-bottom: 1rem;"><a href="index.html">← सभी पोस्ट पर वापस जाएं</a></nav>
+                        <h1>❌ ब्लॉग ID नहीं मिली!</h1>
+                        <p>कृपया सही ब्लॉग ID के साथ लिंक का उपयोग करें।</p>`;
+                    return;
+                }
+
+                fetch('./data/blog.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch blog data');
+                        }
+                        return response.json();
+                    })
+                    .then(posts => {
+                        const post = posts.find(p => p.id === blogId);
+
+                        if (post) {
+                            pageTitle.textContent = post.title;
+                            
+                            // Content को पैराग्राफ में विभाजित करें, और Bold Markdown (**) को संभालें
+                            const formattedContent = post.content
+                                .split('\n\n')
+                                .map(p => {
+                                    if (p.startsWith('**') && p.endsWith('**')) {
+                                        // Heading/Sub-heading style
+                                        return `<h3 style="margin-top: 1.5rem; color: var(--secondary-color);">${p.substring(2, p.length-2)}</h3>`;
+                                    }
+                                    // Regular paragraph
+                                    // **bold text** को <strong> tag में बदलें
+                                    return `<p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+                                })
+                                .join('');
+
+                            container.innerHTML = `
+                                <nav style="margin-bottom: 1rem;"><a href="index.html">← सभी पोस्ट पर वापस जाएं</a></nav>
+                                <img src="${post.imageUrl}" alt="${post.title}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 1.5rem;">
+                                <h1 style="color: var(--text-dark); margin-bottom: 1rem;">${post.title}</h1>
+                                <div style="font-size: 1.1em; line-height: 1.8;">
+                                    ${formattedContent}
+                                </div>
+                            `;
+                        } else {
+                            container.innerHTML = `
+                                <nav style="margin-bottom: 1rem;"><a href="index.html">← सभी पोस्ट पर वापस जाएं</a></nav>
+                                <h1>🤷‍♂️ ब्लॉग नहीं मिला!</h1>
+                                <p>ID: ${blogId} के साथ कोई पोस्ट मौजूद नहीं है।</p>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error loading single blog post:", error);
+                        container.innerHTML = `<h1 style="color: red;">डेटा लोड करने में त्रुटि आई।</h1>`;
+                    });
+            }
+            
+            // Single blog post लोड करें
+            loadBlogPost();
+        });
+    </script>
+</body>
+</html>

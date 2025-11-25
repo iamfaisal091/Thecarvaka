@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>“Beyond Gods, Within Logic.”</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* Fluid Variables and Reset */
+        :root {
+            --primary-color: #3b82f6; 
+            --secondary-color: #10b981; 
+            --background-light: #f3f4f6;
+            --text-dark: #1f2937;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* FLUID TYPOGRAPHY: Stable font size */
+            font-size: clamp(16px, 1.2vw, 18px); 
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        ul {
+            list-style: none;
+        }
+        
+        /* 1. Header Styling (FIXED: Improved Mobile Layout) */
+        header {
+            background: var(--text-dark);
+            color: #fff;
+            height: var(--header-height);
+            padding: 0 1rem; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            /* Position relative for absolute search-container */
+            position: relative; 
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 3vw, 1.5rem); 
+            font-weight: 700;
+            color: var(--secondary-color);
+            flex-shrink: 0; 
+        }
+        
+        /* 2. Search Container */
+        .search-container {
+            display: flex;
+            align-items: center;
+            order: 2;
+            transition: all 0.3s ease;
+            max-width: 100%;
+            flex-grow: 1; 
+            justify-content: flex-end; 
+        }
+        
+        /* Icon Button Styling */
+        #search-icon {
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            flex-shrink: 0; 
+            z-index: 1; 
+        }
+        
+        /* Search Input */
+        .search-input {
+            width: 0; 
+            opacity: 0;
+            padding: 0;
+            border: none;
+            height: 35px;
+            background-color: #4b5563;
+            color: #fff;
+            border-radius: 20px;
+            transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin-left 0.3s ease;
+            margin-left: -10px; 
+        }
+
+        /* 3. ACTIVE state for Mobile Search */
+        .search-container.active {
+            position: absolute; 
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            max-width: none; 
+            z-index: 1001; 
+            background: var(--text-dark);
+            padding: 0 1rem;
+            border-radius: 0;
+            justify-content: space-between;
+        }
+
+        .search-container.active .search-input {
+            width: calc(100% - 40px); 
+            opacity: 1;
+            padding: 8px 15px;
+            margin-left: 0; 
+            background-color: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--primary-color);
+            order: 1;
+        }
+
+        .search-container.active #search-icon {
+            color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            order: 2; 
+        }
+        
+        /* Hide siblings when search is active */
+        .search-container.active ~ .logo,
+        .search-container.active ~ .desktop-nav,
+        .search-container.active ~ #hamburger-button {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s 0.3s, opacity 0.3s ease;
+        }
+
+        /* Hamburger and Desktop Nav */
+        .desktop-nav { display: none; }
+        .hamburger { cursor: pointer; padding: 5px; order: 3; flex-shrink: 0; }
+        .bar { display: block; width: 25px; height: 3px; margin: 5px auto; background-color: #fff; transition: all 0.3s ease; }
+        
+        /* 4. Hamburger Animation */
+        .hamburger.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active .bar:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .hamburger.active .bar:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* 5. Main Container & Sidebar */
+        .main-container { flex-grow: 1; display: grid; grid-template-columns: 1fr; }
+        .sidebar {
+            position: fixed; left: 0; top: var(--header-height); height: calc(100vh - var(--header-height));
+            width: var(--sidebar-width); transform: translateX(-100%); transition: transform 0.3s ease;
+            z-index: 999; overflow-y: auto; padding: 1.5rem; background: var(--background-light); box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar.active { transform: translateX(0); }
+        .content-area { padding: clamp(1rem, 5vw, 2rem); max-width: 1200px; margin: 0 auto; width: 100%; }
+        footer { background: var(--text-dark); color: var(--background-light); text-align: center; padding: 1.5rem; }
+
+        /* 6. Desktop Adjustments (Media Query: 900px se bada screen) */
+        @media (min-width: 900px) {
+            
+            header { 
+                padding: 0 2rem; 
+                position: sticky; 
+            }
+            
+            .desktop-nav { display: flex; order: 3; gap: 1.5rem; }
+            .desktop-nav a { color: #fff; }
+
+            /* Desktop FIX: Search bar hamesha dikhega aur stable rahega */
+            .search-container {
+                max-width: 400px;
+                order: 2;
+                justify-content: flex-start;
+                position: static; 
+                padding: 0;
+                z-index: auto;
+                flex-grow: 0; 
+            }
+
+            .search-container .search-input {
+                width: 250px; 
+                opacity: 1;
+                padding: 8px 15px;
+                margin-left: 0;
+                background-color: #4b5563;
+                color: #fff;
+                border: 1px solid #3c4a5c; 
+            }
+            .search-container #search-icon { display: none; }
+            .search-container.active .search-input { width: 250px; } 
+            .search-container.active { background: none; } 
+
+            /* Desktop: Ensure siblings are visible */
+            .search-container.active ~ .logo,
+            .search-container.active ~ .desktop-nav,
+            .search-container.active ~ #hamburger-button {
+                visibility: visible;
+                opacity: 1;
+                transition: none;
+            }
+
+            .hamburger { display: none; }
+
+            .main-container {
+                grid-template-columns: var(--sidebar-width) 1fr;
+            }
+            
+            .sidebar {
+                position: sticky;
+                top: var(--header-height);
+                height: calc(100vh - var(--header-height));
+                transform: translateX(0); 
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="logo">The Cārvāka</div>
+        
+        <div class="search-container" id="search-box">
+            <i class="fa-solid fa-magnifying-glass" id="search-icon"></i>
+            <input type="search" placeholder="Search blog posts..." class="search-input">
+        </div>
+
+        <nav class="desktop-nav">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Products</a></li>
+                <li><a href="#">Support</a></li>
+            </ul>
+        </nav>
+
+        <div class="hamburger" id="hamburger-button">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar" id="sidebar-menu">
+            <h3>Navigation</h3>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Billing</a></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">Extra</h3>
+            <ul>
+                <li><a href="#">Reports</a></li>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="content-area">
+            
+            
+            <section style="margin-top: 3rem; padding: 1.5rem; background: var(--background-light); border-radius: 8px;">
+                <h2>🧬</h2>
+                <div id="blog-list-container" class="blog-grid" style="
+                    display: grid; 
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+                    gap: 2rem; 
+                    margin-top: 1.5rem;">
+                    <p style="grid-column: 1 / -1;">ब्लॉग पोस्ट लोड हो रहे हैं...</p>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            
+        </div>
+        <p>The Cārvāka &copy; 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.getElementById('hamburger-button');
+            const sidebar = document.getElementById('sidebar-menu');
+            const searchIcon = document.getElementById('search-icon'); 
+            const searchBox = document.getElementById('search-box'); 
+            const searchInput = document.querySelector('.search-input');
+            const container = document.getElementById('blog-list-container');
+            
+            let allBlogPosts = []; // JSON डेटा को स्टोर करने के लिए ग्लोबल वेरिएबल
+
+            // Function to check if we are in mobile view
+            const isMobile = () => window.innerWidth <= 900;
+            
+            // Function to get query parameter
+            const getQueryParam = (param) => new URLSearchParams(window.location.search).get(param);
+
+
+            // --- Core Layout Logic ---
+
+            // Hamburger Toggle
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                hamburger.classList.toggle('active'); 
+            });
+
+            // Sidebar Links Close
+            const sidebarLinks = sidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (isMobile()) {
+                        sidebar.classList.remove('active');
+                        hamburger.classList.remove('active');
+                    }
+                });
+            });
+
+            // Search Icon Expansion Logic
+            searchIcon.addEventListener('click', function() {
+                if (isMobile()) {
+                    searchBox.classList.toggle('active');
+                    if (searchBox.classList.contains('active')) {
+                        searchInput.focus();
+                    } else {
+                        searchInput.blur();
+                    }
+                }
+            });
+            
+            // Search Input Focus for better UX on mobile
+            searchInput.addEventListener('focus', function() {
+                 if (isMobile()) {
+                    searchBox.classList.add('active');
+                }
+            });
+
+            // Window resize handler to handle desktop/mobile switch
+            window.addEventListener('resize', function() {
+                if (!isMobile()) {
+                    searchBox.classList.remove('active');
+                }
+            });
+
+            // --- Blog Loading and Search Logic (UPDATED) ---
+
+            /**
+             * ब्लॉग पोस्ट्स को DOM में प्रदर्शित करता है।
+             * @param {Array} posts - दिखाने के लिए ब्लॉग पोस्ट की एक ऐरे।
+             */
+            function displayBlogPosts(posts) {
+                container.innerHTML = '';
+                if (posts.length === 0) {
+                     container.innerHTML = '<p style="grid-column: 1 / -1; color: #666; font-style: italic;">कोई ब्लॉग पोस्ट नहीं मिला।</p>';
+                     return;
+                }
+                
+                posts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'blog-card';
+                    card.style.cssText = `
+                        background: #fff; 
+                        border: 1px solid #ddd; 
+                        border-radius: 8px; 
+                        overflow: hidden; 
+                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        cursor: pointer;
+                    `;
+                    
+                    card.onmouseover = () => {
+                        card.style.transform = 'translateY(-5px)';
+                        card.style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.2)';
+                    };
+                    card.onmouseout = () => {
+                        card.style.transform = 'translateY(0)';
+                        card.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.1)';
+                    };
+                    
+                    card.onclick = () => {
+                        window.location.href = `blog.html?id=${post.id}`;
+                    };
+
+                    card.innerHTML = `
+                        <img src="${post.imageUrl}" alt="${post.title}" style="width: 100%; height: 200px; object-fit: cover;">
+                        <div style="padding: 1rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 0.5rem;">${post.title}</h3>
+                            <p style="font-size: 0.9em; color: #666;">${post.summary}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            /**
+             * ब्लॉग पोस्ट्स को फ़िल्टर करता है और DOM को अपडेट करता है।
+             * @param {string} searchTerm - सर्च करने के लिए टर्म।
+             */
+            function filterAndDisplayPosts(searchTerm) {
+                const term = searchTerm.toLowerCase().trim();
+                
+                if (term === '') {
+                    displayBlogPosts(allBlogPosts); 
+                    return;
+                }
+
+                const filteredPosts = allBlogPosts.filter(post => {
+                    const titleMatch = post.title.toLowerCase().includes(term);
+                    const summaryMatch = post.summary.toLowerCase().includes(term);
+                    return titleMatch || summaryMatch;
+                });
+                
+                displayBlogPosts(filteredPosts); 
+            }
+
+            /**
+             * सर्च इनपुट पर लिसनर अटैच करता है और URL से सर्च टर्म हैंडल करता है।
+             */
+            function attachSearchListener() {
+                // 1. Live input listener
+                searchInput.addEventListener('input', function() {
+                    filterAndDisplayPosts(searchInput.value);
+                });
+
+                // 2. URL search parameter handler (blog.html से आने पर)
+                const urlSearchTerm = getQueryParam('search');
+                if (urlSearchTerm) {
+                    const decodedTerm = decodeURIComponent(urlSearchTerm);
+                    searchInput.value = decodedTerm;
+                    // चूंकि डेटा पहले ही लोड हो चुका होगा (यानी loadBlogPosts से), हम तुरंत फ़िल्टर कर सकते हैं।
+                    filterAndDisplayPosts(decodedTerm);
+                    
+                    // Mobile पर Search Bar को सक्रिय करें अगर URL से सर्च हो रहा है
+                    if(isMobile()) {
+                         searchBox.classList.add('active');
+                         searchInput.focus();
+                    }
+                }
+            }
+
+
+            /**
+             * JSON से ब्लॉग पोस्ट लोड करता है।
+             */
+            function loadBlogPosts() {
+                fetch('./data/blog.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch blog data');
+                        }
+                        return response.json();
+                    })
+                    .then(posts => {
+                        allBlogPosts = posts; 
+                        
+                        // पहले सभी पोस्ट लोड करें, फिर URL में सर्च टर्म है तो फ़िल्टर करें
+                        // attachSearchListener() में फ़िल्टरिंग अब URL और लाइव इनपुट दोनों को संभालती है
+                        displayBlogPosts(allBlogPosts); 
+                        attachSearchListener(); 
+                    })
+                    .catch(error => {
+                        console.error("Error loading blogs:", error);
+                        container.innerHTML = `<p style="color: red; grid-column: 1 / -1;">ब्लॉग लोड करने में त्रुटि आई: कृपया सुनिश्चित करें कि <code>./data/blog.json</code> फ़ाइल मौजूद है।</p>`;
+                    });
+            }
+
+            // Page load hone par blogs ko load karein
+            loadBlogPosts();
+        });
+    </script>
+
+</body>
+</html>
